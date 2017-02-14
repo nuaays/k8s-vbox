@@ -11,4 +11,4 @@ and check the kubernetes instance with
 
 `kubectl cluster-info`
 
-The kubernetes dashboard is accessible ion port 3200 (http://172.16.0.10:3200)
+The kubernetes dashboard is accessible on port 32000 (http://172.16.0.10:32000)
