@@ -3,7 +3,7 @@ Here is a simple [Vagrant](https://www.vagrantup.com) setup instantiating a [kub
  
 `vagrant up` 
 
-The setup uses the newly introduced [kubeadm](https://kubernetes.io/docs/admin/kubeadm/) tool to bring the kubernetes instance on the master node and to register the nodes. The instance also features the kubernetes [dashboard}(https://github.com/kubernetes/dashboard) UI. After installation go to the master node with
+The setup uses the newly introduced [kubeadm](https://kubernetes.io/docs/admin/kubeadm/) tool to bring the kubernetes instance on the master node and to register the nodes. The instance also features the kubernetes [dashboard](https://github.com/kubernetes/dashboard) UI. After installation go to the master node with
 
 ` vagrant ssh master` 
 
