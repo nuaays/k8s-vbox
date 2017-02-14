@@ -36,10 +36,10 @@ config.vm.box_check_update = false
      
       if node[:hostname] == 'master'
           nodeconfig.vm.provision :shell, :inline => " kubeadm init --pod-network-cidr 10.244.0.0/16 --token \"head12.tokenbodystring1\" --api-advertise-addresses 172.16.0.10", :privileged => true
-          nodeconfig.vm.provision :file, :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
+          nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :shell, :inline => " kubectl apply -f /tmp/flannel.yaml", :privileged => true
           nodeconfig.vm.provision :shell, :inline => "kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml"
-          
+          nodeconfig.vm.provision :shell, :inline => "kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'"
       else 
           nodeconfig.vm.provision :shell, :inline => "kubeadm join 172.16.0.10 --token  \"head12.tokenbodystring1\"", :privileged => true
       end
