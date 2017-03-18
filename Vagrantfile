@@ -44,7 +44,8 @@ config.vm.box_check_update = false
             kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
             kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
             kubectl create -f /tmp/local-registry.yaml
-            cd /etc/kubernetes/pki && cp ca.pem apiserver.pem apiserver-key.pem /tmp && sudo chmod +r *.pem 
+            cd /etc/kubernetes/pki && cp ca.pem apiserver.pem apiserver-key.pem /tmp
+            chmod +r /tmp/ca.pem /tmp/apiserver.pem /tmp/apiserver-key.pem 
           SHELL
       else 
           nodeconfig.vm.provision :shell, :inline => "kubeadm join 172.16.0.10 --token  \"head12.tokenbodystring1\"", :privileged => true
