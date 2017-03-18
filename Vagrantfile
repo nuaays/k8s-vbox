@@ -14,7 +14,7 @@ config.vm.box_check_update = false
 
 	nodes.each do |node|
 		config.vm.define node[:hostname] do |nodeconfig|
-	        nodeconfig.vm.box = guest_os
+	    nodeconfig.vm.box = guest_os
   		nodeconfig.vm.network "private_network", ip: node[:ip]
   		nodeconfig.vm.hostname = node[:hostname] + ".box"
 
@@ -38,11 +38,14 @@ config.vm.box_check_update = false
       if node[:hostname] == 'master'
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
-          nodeconfig.vm.provision :shell, :inline => "kubeadm init --pod-network-cidr 10.244.0.0/16 --token \"head12.tokenbodystring1\" --api-advertise-addresses 172.16.0.10", :privileged => true
-          nodeconfig.vm.provision :shell, :inline => "kubectl apply -f /tmp/flannel.yaml", :privileged => true
-          nodeconfig.vm.provision :shell, :inline => "kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml"
-          nodeconfig.vm.provision :shell, :inline => "kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'"
-          nodeconfig.vm.provision :shell, :inline => "kubectl create -f /tmp/local-registry.yaml", :privileged => true
+          nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
+            kubeadm init --pod-network-cidr 10.244.0.0/16 --token \"head12.tokenbodystring1\" --api-advertise-addresses 172.16.0.10
+            kubectl apply -f /tmp/flannel.yaml
+            kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+            kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
+            kubectl create -f /tmp/local-registry.yaml
+            cd /etc/kubernetes/pki && cp ca.pem apiserver.pem apiserver-key.pem /tmp && sudo chmod +r *.pem 
+          SHELL
       else 
           nodeconfig.vm.provision :shell, :inline => "kubeadm join 172.16.0.10 --token  \"head12.tokenbodystring1\"", :privileged => true
       end     
