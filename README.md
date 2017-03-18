@@ -15,4 +15,8 @@ The kubernetes dashboard is accessible on port 32000 (http://172.16.0.10:32000)
 
 There is docker remote repository deployed on the master node accessible via 172.16.0.10:30500. Images can be pushed with docker push 172.16.0.10:30500/${TAG}:${VERSION}. The repository is insecure and the appropriate configuration should be present in the local docker engine from where the image is pushed. For a configuration example see [deployments/daemon.json](deployments/daemon.json)
 
-To configure the kubectl context on the host run ./configure_kubectl.sh. The cluster info should be visible after a successful context set.
+To configure the kubectl context on the host run 
+
+`./configure_kubectl.sh`
+
+The cluster info should be visible after a successful context set.
