@@ -41,7 +41,7 @@ config.vm.box_check_update = false
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
-            kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --service-dns-domain \"service.local\" --token \"head12.tokenbodystring1\" --api-advertise-addresses 172.16.0.10
+            kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --service-dns-domain \"service.local\" --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10
             kubectl apply -f /tmp/flannel.yaml
             kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
             kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
