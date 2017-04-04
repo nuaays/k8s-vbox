@@ -38,18 +38,16 @@ config.vm.box_check_update = false
       SHELL
 
       if node[:hostname] == 'master'
-          nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
+          nodeconfig.vm.provision :file,  :source => "./deployments/calico.yaml", :destination => "/tmp/calico.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
-            kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --service-dns-domain \"service.local\" --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10
-            cp /etc/kubernetes/admin.conf $HOME/
-            chown $(id -u):$(id -g) $HOME/admin.conf
-            export KUBECONFIG=$HOME/admin.conf
-            kubectl apply -f /tmp/flannel.yaml
-            kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
-            kubectl --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
-            kubectl create -f /tmp/local-registry.yaml
-            cp $HOME/admin.conf /storage
+            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10
+            kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+            kubectl --kubeconfig /etc/kubernetes/admin.conf --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
+            kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/local-registry.yaml
+            kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/calico.yaml
+            kubectl --kubeconfig /etc/kubernetes/admin.conf create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+            cp /etc/kubernetes/admin.conf /storage
           SHELL
       else 
           nodeconfig.vm.provision :shell, :inline => "kubeadm join 172.16.0.10:6443 --token  \"head12.tokenbodystring1\"", :privileged => true
