@@ -1,6 +1,7 @@
-Switched to kubeadm 1.6.1 (unstable) due to [issue](https://github.com/kubernetes/kubernetes/issues/43808) with #kubernetes 1.6.1
+Switched to kubeadm 1.6.1 (unstable) due to this [issue](https://github.com/kubernetes/kubernetes/issues/43808)
 
-# K8s cluster on vbox
+
+# K8s cluster on vbox featuring kubernetes 1.6.1
 Here is a simple [Vagrant](https://www.vagrantup.com) setup instantiating a [kubernetes](https://kubernetes.io) cluster. The instance features three VMs (one master, two nodes) and a [flannel](https://coreos.com/flannel/docs/latest/) overlay network. To setup the k8s instance simply execute:
  
 `vagrant up` 
