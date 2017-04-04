@@ -32,7 +32,7 @@ config.vm.box_check_update = false
         echo \"deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main\" >> /etc/apt/sources.list.d/kubernetes.list 
         apt-get update && apt-get upgrade
 			  apt-get install -y docker.io
-			  apt-get install -y kubelet kubeadm=1.6.1-beta.0.5+d8a384c1c5e35d-00 kubectl kubernetes-cni
+			  apt-get install -y kubelet kubeadm=1.6.1-00 kubectl kubernetes-cni
         touch /var/lib/cloud/instance/locale-check.skip
         mv /tmp/daemon.json /etc/docker && service docker restart
       SHELL
