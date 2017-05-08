@@ -29,23 +29,23 @@ config.vm.box_check_update = false
       nodeconfig.vm.provision :file,  :source => "./deployments/daemon.json", :destination => "/tmp/daemon.json"
       nodeconfig.vm.provision "shell", privileged: true, inline: <<-SHELL
         curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -    
-        echo \"deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main\" >> /etc/apt/sources.list.d/kubernetes.list 
+        echo \"deb http://apt.kubernetes.io/ kubernetes-xenial main\" >> /etc/apt/sources.list.d/kubernetes.list 
         apt-get update && apt-get upgrade
 			  apt-get install -y docker.io
-			  apt-get install -y kubelet kubeadm=1.6.1-00 kubectl kubernetes-cni
+			  apt-get install -y kubelet kubeadm kubectl kubernetes-cni
         touch /var/lib/cloud/instance/locale-check.skip
         mv /tmp/daemon.json /etc/docker && service docker restart
       SHELL
 
       if node[:hostname] == 'master'
-          nodeconfig.vm.provision :file,  :source => "./deployments/calico.yaml", :destination => "/tmp/calico.yaml"
+          nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
             kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10
             kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
             kubectl --kubeconfig /etc/kubernetes/admin.conf --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
             kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/local-registry.yaml
-            kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/calico.yaml
+            kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/flannel.yaml
             kubectl --kubeconfig /etc/kubernetes/admin.conf create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
             cp /etc/kubernetes/admin.conf /storage
           SHELL
