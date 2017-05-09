@@ -39,14 +39,16 @@ config.vm.box_check_update = false
 
       if node[:hostname] == 'master'
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
+          nodeconfig.vm.provision :file,  :source => "./deployments/kube-flannel-rbac.yaml", :destination => "/tmp/kube-flannel-rbac.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
-            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10
+            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10 --pod-network-cidr 10.244.0.0/16
             kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
             kubectl --kubeconfig /etc/kubernetes/admin.conf --namespace=kube-system patch service kubernetes-dashboard --type=json -p '[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": 32000}]'
             kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/local-registry.yaml
-            kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/flannel.yaml
             kubectl --kubeconfig /etc/kubernetes/admin.conf create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+            kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/kube-flannel-rbac.yaml
+            kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/flannel.yaml
             cp /etc/kubernetes/admin.conf /storage
           SHELL
       else 
