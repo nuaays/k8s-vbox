@@ -1,7 +1,4 @@
-Switched to kubeadm 1.6.1 (unstable) due to this [issue](https://github.com/kubernetes/kubernetes/issues/43808)
-
-
-# K8s cluster on vbox featuring kubernetes 1.6.1
+# K8s cluster on vbox featuring kubernetes 1.6.2
 Here is a simple [Vagrant](https://www.vagrantup.com) setup instantiating a [kubernetes](https://kubernetes.io) cluster. The instance features three VMs (one master, two nodes) and a [flannel](https://coreos.com/flannel/docs/latest/) overlay network. To setup the k8s instance simply execute:
  
 `vagrant up` 
@@ -21,7 +18,5 @@ There is docker remote repository deployed on the master node accessible via 172
 To use kubectl on the host update to the [latest version](https://kubernetes.io/docs/tasks/kubectl/install/) and export KUBECONFIG env variable pointing at mnt/admin.conf
 
 `export KUBECONFIG=mnt/admin.conf && kubectl cluster-info`
-
-Example can be found in configure_kubectl.sh
 
 The cluster info should be visible with kubectl cluster_info
