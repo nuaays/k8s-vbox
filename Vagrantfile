@@ -43,17 +43,23 @@ config.vm.box_check_update = false
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel-rbac.yaml", :destination => "/tmp/k8s_addons/flannel-rbac.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/dashboard-svc.yaml", :destination => "/tmp/k8s_addons/dashboard-svc.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/heapster.yaml", :destination => "/tmp/k8s_addons/heapster.yaml"
-          # nodeconfig.vm.provision :file,  :source => "./deployments/registry.yaml", :destination => "/tmp/k8s_addons/registry.yaml"  
-          nodeconfig.vm.provision :shell, privileged: true, env: {"apiserver"=>node[:ip]}, inline: <<-SHELL
-            echo \"$apiserver\"
-            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address \"$apiserver\" --pod-network-cidr 10.244.0.0/16
-            cp /etc/kubernetes/admin.conf /storage
-          SHELL
+          # nodeconfig.vm.provision :file,  :source => "./deployments/registry.yaml", :destination => "/tmp/k8s_addons/registry.yaml"
+
+          # invoking kubeadm
+          nodeconfig.vm.provision :shell, privileged: true, env: {"apiserver"=>node[:ip]}, path: "./deployments/init_k8s.sh"
+          
+          # pathching kubelet with private node ip and restrat it
+          # needed as by default kubeadm is configred to use first IP (NAT interface) as node IP
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
+
+          # installing k8s addons (flannel is patched)
           nodeconfig.vm.provision :shell, privileged: true, env: {"apiserver" => node[:ip]}, path: "./deployments/k8s_addons.sh"
       else 
       # setting up worker nodes  
           nodeconfig.vm.provision :shell, privileged: true, inline: "kubeadm join master:6443 --token  \"head12.tokenbodystring1\" --skip-preflight-checks"
+
+          # pathching kubelet with private node ip and restrat it
+          # needed as by default kubeadm is configred to use first IP (NAT interface) as node IP
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
       end     
 	  end
