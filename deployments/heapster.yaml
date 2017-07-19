@@ -28,7 +28,7 @@ spec:
     metadata:
       labels:
         task: monitoring
-        k8s-app: heapster
+        k8s-app: heapster  
     spec:
       serviceAccountName: heapster
       containers:
