@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#patching flannel descriptor with api service ip
+echo "setting $apiserver in flannel"
+sed -i "s/\$\$apiserver/$apiserver/" /tmp/flannel.yaml
+
+
 kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://git.io/kube-dashboard
 kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/dashboard-nodeport-svc.yaml
 kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /tmp/local-registry.yaml

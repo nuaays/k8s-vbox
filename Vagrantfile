@@ -26,23 +26,34 @@ config.vm.box_check_update = false
 
       config.vm.synced_folder "mnt/", "/storage", create:true, id: "storage"
 
+      # adding nodes IPs
+      nodes.each do |n|
+        nodeconfig.vm.provision "shell", privileged: true, path: "./deployments/hosts.sh", env: {"hostname" => n[:hostname],"hostip" => n[:ip]} unless n[:hostname] == node[:hostname]
+      end
+
+      # adding local k8s registry for docker engine
       nodeconfig.vm.provision :file,  :source => "./deployments/daemon.json", :destination => "/tmp/daemon.json"
+
+      # installing k8s docker and binaries
       nodeconfig.vm.provision "shell", privileged: true, path: "./deployments/install.sh"
-     
+      
+      # setting up master node, adding dashboard, flannel overlay, heapster and local docker registry (172.16.0.10:30500)
       if node[:hostname] == 'master'
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/kube-flannel-rbac.yaml", :destination => "/tmp/kube-flannel-rbac.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/dashboard-nodeport-svc.yaml", :destination => "/tmp/dashboard-nodeport-svc.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/heapster-controller.yaml", :destination => "/tmp/heapster-controller.yaml"
-          nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
-            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10 --pod-network-cidr 10.244.0.0/16
+          nodeconfig.vm.provision :shell, privileged: true, env: {"apiserver"=>node[:ip]}, inline: <<-SHELL
+            echo \"$apiserver\"
+            kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address \"$apiserver\" --pod-network-cidr 10.244.0.0/16
             cp /etc/kubernetes/admin.conf /storage
           SHELL
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
-          nodeconfig.vm.provision :shell, privileged: true, path: "./deployments/k8s_addons.sh"
+          nodeconfig.vm.provision :shell, privileged: true, env: {"apiserver" => node[:ip]}, path: "./deployments/k8s_addons.sh"
       else 
-          nodeconfig.vm.provision :shell, privileged: true, inline: "kubeadm join 172.16.0.10:6443 --token  \"head12.tokenbodystring1\" --skip-preflight-checks"
+      # setting up worker nodes  
+          nodeconfig.vm.provision :shell, privileged: true, inline: "kubeadm join master:6443 --token  \"head12.tokenbodystring1\" --skip-preflight-checks"
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
       end     
 	  end

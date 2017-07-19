@@ -69,7 +69,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: KUBERNETES_SERVICE_HOST
-          value: "172.16.0.10" #ip address of the host where kube-apiservice is running
+          value: $$apiserver #ip address of the host where kube-apiservice is running
         - name: KUBERNETES_SERVICE_PORT
           value: "6443"      
         volumeMounts:
