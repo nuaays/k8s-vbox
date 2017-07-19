@@ -28,20 +28,21 @@ config.vm.box_check_update = false
 
       nodeconfig.vm.provision :file,  :source => "./deployments/daemon.json", :destination => "/tmp/daemon.json"
       nodeconfig.vm.provision "shell", privileged: true, path: "./deployments/install.sh"
-
+     
       if node[:hostname] == 'master'
           nodeconfig.vm.provision :file,  :source => "./deployments/flannel.yaml", :destination => "/tmp/flannel.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/kube-flannel-rbac.yaml", :destination => "/tmp/kube-flannel-rbac.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/local-registry.yaml", :destination => "/tmp/local-registry.yaml"
           nodeconfig.vm.provision :file,  :source => "./deployments/dashboard-nodeport-svc.yaml", :destination => "/tmp/dashboard-nodeport-svc.yaml"
+          nodeconfig.vm.provision :file,  :source => "./deployments/heapster-controller.yaml", :destination => "/tmp/heapster-controller.yaml"
           nodeconfig.vm.provision :shell, privileged: true, inline: <<-SHELL
             kubeadm init --token \"head12.tokenbodystring1\" --apiserver-advertise-address 172.16.0.10 --pod-network-cidr 10.244.0.0/16
             cp /etc/kubernetes/admin.conf /storage
           SHELL
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
-          nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/k8s_addons.sh"
+          nodeconfig.vm.provision :shell, privileged: true, path: "./deployments/k8s_addons.sh"
       else 
-          nodeconfig.vm.provision :shell, privileged: true, inline: "kubeadm join 172.16.0.10:6443 --token  \"head12.tokenbodystring1\""
+          nodeconfig.vm.provision :shell, privileged: true, inline: "kubeadm join 172.16.0.10:6443 --token  \"head12.tokenbodystring1\" --skip-preflight-checks"
           nodeconfig.vm.provision :shell, privileged: true, env: {"nodeip" => node[:ip]}, path: "./deployments/patch_node_ip.sh"
       end     
 	  end
